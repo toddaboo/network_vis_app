@@ -65,9 +65,10 @@ nodesToVisNetwork <- function(list) {
   df <- as.data.frame(bind_rows(lapply(list, function(x) {
     if(length(x[c("data")]$data) > 0) { 
       d <- data.frame(x[c("metadata", "data")])
-      if(length(names(d)[!(names(d) %in% c("metadata.id", "metadata.type"))]) == 1) {
-        names(d)[!(names(d) %in% c("metadata.id", "metadata.type"))] <- paste0("data.", names(d)[!(names(d) %in% c("start", "end", "metadata.id", "metadata.type"))])
+      if(length(names(d)[!(names(d) %in% c("metadata.id", "metadata.labels"))]) == 1) {
+        names(d)[!(names(d) %in% c("metadata.id", "metadata.labels"))] <- paste0("data.", names(d)[!(names(d) %in% c("metadata.id", "metadata.labels"))])
       }
+      if("data.data" %in% names(d)) { names(d)[names(d) == "data.data"] <- "data.name" }
       return(d)
     } else { 
       return(data.frame(x[c("metadata")]))

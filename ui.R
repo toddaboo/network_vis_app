@@ -16,10 +16,11 @@ shinyUI(fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      tags$textarea(id="query", rows=8, cols=40), br(),
-      actionButton("run", "Run", icon="play")
+      tags$textarea(id="query", rows=8, cols="40"), br(),
+      submitButton("Run", icon=icon("play"))
     ),
     mainPanel(
+      conditionalPanel("output.networkVis", "it may take a minute to load...when it does, click on the graph to explore"),
       visNetworkOutput("networkVis")
     )
   )

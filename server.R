@@ -14,28 +14,31 @@ shinyServer(function(session, input, output) {
 
   g <- startGraph("http://localhost:7474/db/data/")
   
-  data <- reactive({
-    if(input$run == 0) return(NULL)
-    isolate({
-      withProgress(message = 'Pulling data...', value = 25, {
-        neo4jTovisNetwork(g, input$query)
-      })
+  data <- reactive({    
+    validate(
+      need(input$query != "", "Please enter a query."),
+      need(try(cypher(g, input$query), silent=T), "Query invalid.")
+    )
+    
+    withProgress(message = 'Pulling data...', value = 25, {
+      neo4jTovisNetwork(g, input$query)
     })
   })
   
   output$networkVis <- renderVisNetwork({
-    if(input$run == 0) return(NULL)
-    isolate({
-      nodes <- data()$nodes
-      rels <- data()$rels
-      
-      withProgress(message = 'Generating plot...', value = 50, {
-        visNetwork(nodes, rels, width="100%") %>% 
-          visOptions(highlightNearest = TRUE, clickToUse = TRUE) #%>% 
+    validate(
+      need(!is.null(data()), "Please enter a query.")
+    )
+
+    nodes <- data()$nodes
+    rels <- data()$rels
+    
+    withProgress(message = 'Generating plot...', value = 50, {
+      visNetwork(nodes, rels, width="100%") %>% 
+        visOptions(highlightNearest = TRUE, clickToUse = TRUE) #%>% 
 #           visGroups(groupname = "Person", shape = "icon", icon = list(code = "f007")) %>%
 #           visGroups(groupname = "Movie", shape = "icon", icon = list(code = "f008", color="red")) %>%
 #           addFontAwesome()
-      })
     })
   })
   
