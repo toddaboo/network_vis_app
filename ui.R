@@ -16,7 +16,7 @@ shinyUI(fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      tags$textarea(id="query", rows=8, cols="40"), br(),
+      tags$textarea(id="query", rows=8, cols=40), br(),
       submitButton("Run", icon=icon("play"))
     ),
     mainPanel(
