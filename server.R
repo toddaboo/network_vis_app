@@ -6,6 +6,7 @@
 
 library(shiny)
 library(shinyBS)
+library(sortableR)
 library(RNeo4j)
 library(visNetwork)
 source('helpers.R')
@@ -14,14 +15,56 @@ shinyServer(function(session, input, output) {
 
   g <- startGraph("http://localhost:7474/db/data/")
   
+  output$searchQuery <- renderUI({
+    things <- getLabel(g)
+    selectInput("search", "", selectize = T, choices = things)
+  })
+  
+  qry <- reactive({
+    gsub("&gt;", ">", input$cypher_query)
+  })
+  
+  output$cypher <- renderText({
+    qry()
+  })
+  
+  output$things <- renderUI({
+    things <- getLabel(g)
+    bsCollapsePanel(title = "Things", style = "primary",
+      div(class="panel-heading", id = "sortThings",
+        lapply(things, function(x) list(div(tags$span( class = "glyphicon glyphicon-move" ), x)))
+      )
+      ,sortableR( "sortThings", options = list( group = "sortGroup1" ) )
+    )
+  })
+  
+  output$relationships <- renderUI({
+    rels <- getType(g)
+    bsCollapsePanel(title = "Relationships", style = "primary",
+      div(class="panel-heading", id = "sortRels", 
+        lapply(rels, function(x) list(div(tags$span( class = "glyphicon glyphicon-move" ), x)))
+      )
+      ,sortableR( "sortRels", options = list( group = "sortGroup1" ) )
+    )
+  })
+  
+  output$filters <- renderUI({
+    bsCollapsePanel(title = "Filters", style = "primary",
+      div(class="panel-body", id = "sortFilters"
+              #, lapply(rels, function(x) list(tags$li(x, class="list-group-item")))
+      )
+      ,sortableR( "sortFilters", options = list( group = "sortGroup1" ) )
+    )
+  })
+  
   data <- reactive({    
     validate(
-      need(input$query != "", "Please enter a query."),
-      need(try(cypher(g, input$query), silent=T), "Query invalid.")
+      need(qry() != "", "Please enter a query."),
+      need(try(cypher(g, qry()), silent=T), "Query invalid.")
     )
     
     withProgress(message = 'Pulling data...', value = 25, {
-      neo4jTovisNetwork(g, input$query)
+      neo4jTovisNetwork(g, qry())
     })
   })
   
