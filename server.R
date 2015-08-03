@@ -21,7 +21,10 @@ shinyServer(function(session, input, output) {
   })
   
   qry <- reactive({
-    gsub("&gt;", ">", input$cypher_query)
+    qryString <- gsub("&gt;", ">", input$cypher_query)
+    qryString <- gsub("\n          ", "", qryString)
+    qryString <- gsub("\n        ", "", qryString)
+    print(qryString)
   })
   
   output$cypher <- renderText({
@@ -78,7 +81,7 @@ shinyServer(function(session, input, output) {
     
     withProgress(message = 'Generating plot...', value = 50, {
       visNetwork(nodes, rels, width="100%") %>% 
-        visOptions(highlightNearest = TRUE, clickToUse = TRUE) #%>% 
+      visOptions(highlightNearest = TRUE, clickToUse = TRUE) #%>%
 #           visGroups(groupname = "Person", shape = "icon", icon = list(code = "f007")) %>%
 #           visGroups(groupname = "Movie", shape = "icon", icon = list(code = "f008", color="red")) %>%
 #           addFontAwesome()
